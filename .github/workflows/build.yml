@@ -16,7 +16,7 @@ jobs:
         run: |
           python3 -m venv venv
           source venv/bin/activate
-          pip install pyzule-rw
+          pip install git+https://github.com/asdfzxcvbn/pyzule-rw.git
           echo "PATH=$PWD/venv/bin:$PATH" >> $GITHUB_ENV
 
       - name: Download latest YouTube IPA
