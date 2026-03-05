@@ -38,7 +38,7 @@ jobs:
       - name: Inject tweak into IPA
         run: |
           source venv/bin/activate
-          python3 -m pyzule -i YouTube.ipa -o YouTubePlus.ipa -f *.deb
+          python3 -c "import pyzule_rw; print(dir(pyzule_rw))"
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
