@@ -13,7 +13,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Pyzule
-        run: pip3 install pyzule-rw
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install pyzule-rw
+          echo "PATH=$PWD/venv/bin:$PATH" >> $GITHUB_ENV
 
       - name: Download latest YouTube IPA
         run: |
