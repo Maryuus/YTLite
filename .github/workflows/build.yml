@@ -1,0 +1,45 @@
+name: Build YouTube Plus IPA
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'  # Tous les lundis à 6h
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pyzule
+        run: pip3 install pyzule-rw
+
+      - name: Download latest YouTube IPA
+        run: |
+          curl -L "https://armconverter.com/decryptedappstore/download?bundleId=com.google.ios.youtube" \
+            -o YouTube.ipa || true
+          # Fallback via ipadown
+          if [ ! -f YouTube.ipa ] || [ ! -s YouTube.ipa ]; then
+            pip3 install ipatool
+            ipatool download -b com.google.ios.youtube -o YouTube.ipa
+          fi
+
+      - name: Get latest YTLite deb
+        run: |
+          gh release download --pattern "*arm64e*" --dir .
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Inject tweak into IPA
+        run: |
+          pyzule -i YouTube.ipa -o YouTubePlus.ipa -f *.deb
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: "auto-${{ github.run_number }}"
+          name: "YouTube Plus (auto-build)"
+          files: YouTubePlus.ipa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
