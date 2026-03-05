@@ -31,7 +31,7 @@ jobs:
 
       - name: Get latest YTLite deb
         run: |
-          gh release download --pattern "*arm64e*" --dir .
+          gh release download --repo dayanch96/YTLite --pattern "*arm64e*" --dir .
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
