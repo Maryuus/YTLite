@@ -3,7 +3,7 @@ name: Build YouTube Plus IPA
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 6 * * 1'  # Tous les lundis à 6h
+    - cron: '0 6 * * 1'
 
 jobs:
   build:
@@ -12,34 +12,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Pyzule
+      - name: Setup and build
         run: |
-          python3 -m venv venv
-          source venv/bin/activate
-          pip install git+https://github.com/asdfzxcvbn/pyzule-rw.git
-          echo "PATH=$PWD/venv/bin:$PATH" >> $GITHUB_ENV
+          # Install pyzule
+          brew install python@3.11 || true
+          /opt/homebrew/bin/pip3.11 install git+https://github.com/asdfzxcvbn/pyzule-rw.git --break-system-packages
 
-      - name: Download latest YouTube IPA
-        run: |
-          curl -L "https://armconverter.com/decryptedappstore/download?bundleId=com.google.ios.youtube" \
-            -o YouTube.ipa || true
-          # Fallback via ipadown
-          if [ ! -f YouTube.ipa ] || [ ! -s YouTube.ipa ]; then
-            pip3 install ipatool
-            ipatool download -b com.google.ios.youtube -o YouTube.ipa
-          fi
+          # Download YouTube IPA
+          curl -L "https://armconverter.com/decryptedappstore/download?bundleId=com.google.ios.youtube" -o YouTube.ipa
 
-      - name: Get latest YTLite deb
-        run: |
+          # Download latest YTLite deb
           gh release download --repo dayanch96/YTLite --pattern "*arm64e*" --dir .
+
+          # Inject tweak
+          /opt/homebrew/bin/pyzule -i YouTube.ipa -o YouTubePlus.ipa -f *.deb
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Inject tweak into IPA
-        run: |
-          source venv/bin/activate
-          pip list | grep -i pyzule
-          ls venv/bin/
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
